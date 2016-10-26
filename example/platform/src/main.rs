@@ -72,11 +72,15 @@ impl Platform {
     if last_modified > self.dylib_last_modified {
       std::io::stdout().write(b"reloading!\n");
       std::io::stdout().flush();
+      // Need to dump old systems before dropping the lib or we'll get:
+      // - SIGILL if we add a system
+      // - SIGSEGV if we remove a system
+      self.planner.systems = Vec::new();
+
       drop(self.dylib.take().unwrap());
 
       let dylib = Library::new(LIB_PATH).unwrap();
 
-      self.planner.systems = Vec::new();
       self.planner.systems = {
         let fetch_systems_fn = unsafe {
           dylib.get::<fn() -> Vec<SystemInfo<Duration>>>(b"fetch_systems\0").unwrap()
@@ -94,8 +98,10 @@ impl Platform {
   pub fn run(&mut self, dt: Duration) {
     self.planner.wait();
     self.try_reload();
+    self.planner.wait();
     println!("sys count: {}", self.planner.systems.len());
     self.planner.dispatch(dt);
+    self.planner.wait();
   }
 
   pub fn keep_running(&mut self) -> bool {
