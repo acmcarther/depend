@@ -1,0 +1,13 @@
+[package]
+name = "engine"
+version = "0.1.0"
+authors = ["Alex McArther <acmcarther@gmail.com>"]
+
+[dependencies]
+specs = "0.7.0"
+
+[dependencies.depend]
+path = "../../../depend"
+
+[lib]
+crate-type = ["dylib"]
