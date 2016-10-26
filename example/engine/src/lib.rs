@@ -3,20 +3,21 @@ extern crate depend;
 extern crate specs;
 
 use std::time::Duration;
+use std::io::Write;
 use specs::World;
 use specs::Planner;
+use specs::SystemInfo;
 
 mod systems;
 
 #[no_mangle]
-pub fn fresh_planner(mut world: World) -> Planner<Duration> {
-  println!("first fresh");
-  fresh_planner!(world, 2, [systems::SomeSystem, systems::SomeOtherSystem])
+pub fn install_data(world: &mut World) {
+  install_data!(world, []);
+
 }
 
 #[no_mangle]
-pub fn hotload_planner(mut world: World) -> Planner<Duration> {
-  println!("second hotload");
+pub fn fetch_systems() -> Vec<SystemInfo<Duration>> {
+  fetch_systems!([systems::SomeSystem, systems::SomeOtherSystem])
 
-  hotload_planner!(planner, 2, [systems::SomeSystem, systems::SomeOtherSystem])
 }

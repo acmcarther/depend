@@ -55,31 +55,19 @@ macro_rules! declare_system_dependencies {
 }
 
 #[macro_export]
-macro_rules! fresh_planner {
-  ($world:ident, $thread_count:expr, [$($system:ty),*]) => {
-    {
-      $($crate::data::install_data::<$system>(&mut $world);)*
-
-      let mut auto_installer = $crate::system::AutoInstaller::with_world($world);
-      $(auto_installer.auto_install::<$system>();)*
-
-      auto_installer.apply($thread_count)
-    }
+macro_rules! install_data {
+  ($world:ident, [$($system:ty),*]) => {
+    $($crate::data::install_data::<$system>(&mut $world);)*
   }
 }
 #[macro_export]
-macro_rules! hotload_planner {
-  ($planner:ident, $thread_count:expr, [$($system:ty),*]) => {
+macro_rules! fetch_systems {
+  ([$($system:ty),*]) => {
     {
-      use $crate::hotload::WorldSteal;
-
-      let old_world = $planner.take_world();
-      drop($planner);
-
-      let mut auto_installer = $crate::system::AutoInstaller::with_world(old_world);
+      let mut auto_installer = $crate::system::AutoInstaller::new();
       $(auto_installer.auto_install::<$system>();)*
 
-      auto_installer.apply($thread_count)
+      auto_installer.apply(1).systems
     }
   }
 }
